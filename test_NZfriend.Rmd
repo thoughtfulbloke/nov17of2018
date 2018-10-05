@@ -1,0 +1,56 @@
+---
+title: "NZness"
+author: "David Hood, IT Training and Development, University of Otago"
+date: "10/5/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(cache.path = "../cache/")
+```
+
+```{r libraries}
+library(rtweet)
+library(dplyr)
+
+```
+
+
+```{r load_hetangata}
+hetangata <- readLines("~/Syncplicity Folders/support_files/hetangata.txt")
+```
+
+```{r load_nz_by_friends, cache=TRUE}
+have_data_on <- list.dirs("../fsc_acc", full.names=FALSE)
+have_data_on <- have_data_on[have_data_on != ""]
+# 1234567890/fav_1234567890.csv is the form for fave
+# 1234567890/who_1234567890.csv is the form for profile
+# 1234567890/frn_1234567890.csv is the form for friends (those followed)
+favs <- paste0("../fsc_acc/", have_data_on, "/fav_", have_data_on, ".csv")
+profiles <- paste0("../fsc_acc/", have_data_on, "/who_", have_data_on, ".csv")
+frns <- paste0("../fsc_acc/", have_data_on, "/frn_", have_data_on, ".csv")
+
+read_frns <- function(x) {
+  if(file.exists(x)){
+    filinf <- file.info(x)
+    if(filinf$size < 8){
+      return(NULL)
+      }
+    stored_frns <- read.csv(x, colClasses = "character")
+    stored_frns %>%
+      mutate(friends_id = gsub("x","",user_id)) %>%
+      select(user, friends_id) %>%
+      return()
+  } else {
+    return(NULL)
+  }
+}
+
+frnset <- bind_rows(lapply(frns, read_frns))
+frnset$kiwi <- as.numeric(frnset$friends_id %in% hetangata)
+nzfriends <- frnset %>% group_by(user) %>% summarise(kwness = sum(kiwi))
+rm(frnset)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
