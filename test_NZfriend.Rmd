@@ -12,8 +12,11 @@ knitr::opts_chunk$set(cache.path = "../cache/")
 
 ```{r libraries}
 library(rtweet)
-library(dplyr)
-
+library(dplyr, quietly = TRUE)
+library(ggplot2)
+library(tidyr)
+library(knitr)
+library(stringr)
 ```
 
 
@@ -53,4 +56,173 @@ nzfriends <- frnset %>% group_by(user) %>% summarise(kwness = sum(kiwi))
 rm(frnset)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r load_nz_profiles, cache=TRUE}
+
+read_profile <- function(x) {
+  if(file.exists(x)){
+    filinf <- file.info(x)
+    if(filinf$size < 8){
+      return(NULL)
+      }
+    stored_prof <- read.csv(x, colClasses = "character")
+      return(stored_prof)
+  } else {
+    return(NULL)
+  }
+}
+
+profset <- bind_rows(lapply(profiles, read_profile)) #40798
+profiles <- profset %>%
+    select(user_id, screen_name, country_code, name, 
+           location, description, account_created_at) %>% 
+    mutate(user_id = gsub("x","",user_id)) 
+```
+
+Comparing NZness of friends (people followed) with profile information
+
+```{r}
+combined_data <- nzfriends %>% inner_join(profiles, by=c("user" = "user_id")) #40694
+combined_data %>%
+    mutate(nz_by_cc = case_when(
+        country_code == "NZ" ~ "NZ",
+        !is.na(country_code) ~ "other",
+        TRUE ~ NA_character_
+    )) %>%
+    ggplot(aes(colour=nz_by_cc, x=kwness)) + geom_density()
+
+```
+
+As table (for key early stage)
+
+```{r}
+combined_data %>%
+    mutate(nz_by_cc = case_when(
+        country_code == "NZ" ~ "NZ",
+        !is.na(country_code) ~ "other",
+        TRUE ~ NA_character_
+    )) %>%
+    count(nz_by_cc,kwness) %>%
+    group_by(nz_by_cc) %>%
+    mutate(prop = n / sum(n, na.rm=TRUE)) %>%
+    ungroup() %>%
+    filter(kwness < 30) %>%
+    select(-n) %>%
+    spread(nz_by_cc, prop, fill=0) %>% kable()
+
+```
+
+Looks like following about 25  (allowing for blanks) is the crossover point for NZness
+
+testing against macros in the description
+```{r}
+combined_data %>%
+    mutate(macrons = (as.numeric(str_detect(tolower(description), "ā")) +
+               as.numeric(str_detect(tolower(description), "ē")) +
+               as.numeric(str_detect(tolower(description), "ī")) +
+               as.numeric(str_detect(tolower(description), "ō")) +
+               as.numeric(str_detect(tolower(description), "ū"))) > 0
+               ) %>%
+    ggplot(aes(colour=macrons, x=kwness)) + geom_density()
+```
+
+```{r}
+combined_data %>%
+    mutate(macrons = (as.numeric(str_detect(tolower(description), "ā")) +
+               as.numeric(str_detect(tolower(description), "ē")) +
+               as.numeric(str_detect(tolower(description), "ī")) +
+               as.numeric(str_detect(tolower(description), "ō")) +
+               as.numeric(str_detect(tolower(description), "ū"))) > 0
+               ) %>%
+    count(macrons,kwness) %>%
+    group_by(macrons) %>%
+    mutate(prop = n / sum(n, na.rm=TRUE)) %>%
+    ungroup() %>%
+    filter(kwness < 30) %>%
+    select(-n) %>%
+    spread(macrons, prop, fill=0) %>% kable()
+```
+
+It seems any macrons is a good measure of NZness.
+
+Testing Self declared location:
+
+```{r}
+combined_data %>%
+    mutate(desc_nz = (as.numeric(str_detect(tolower(description), "zealand")) +
+               as.numeric(str_detect(tolower(description), "nz")) +
+               as.numeric(str_detect(tolower(description), "n.z")) +
+               as.numeric(str_detect(tolower(description), "n. z")) +
+               as.numeric(str_detect(tolower(description), "n z")) +
+               as.numeric(str_detect(tolower(description), "n z")) +
+               as.numeric(str_detect(tolower(description), "aotearo")) +
+               as.numeric(str_detect(tolower(description), "auckland")) +
+               as.numeric(str_detect(tolower(description), "wellington")) +
+               as.numeric(str_detect(tolower(description), "christchurch")) +
+               as.numeric(str_detect(tolower(description), "dunedin")) +
+               as.numeric(str_detect(tolower(description), "🇳🇿"))
+               ) > 0
+               ) %>%
+    ggplot(aes(colour=desc_nz, x=kwness)) + geom_density()
+```
+
+Not as good as other measures
+
+Checking location
+
+```{r}
+combined_data %>%
+    mutate(desc_nz = (as.numeric(str_detect(tolower(location), "zealand")) +
+               as.numeric(str_detect(tolower(location), "nz")) +
+               as.numeric(str_detect(tolower(location), "n.z")) +
+               as.numeric(str_detect(tolower(location), "n. z")) +
+               as.numeric(str_detect(tolower(location), "n z")) +
+               as.numeric(str_detect(tolower(location), "n z")) +
+               as.numeric(str_detect(tolower(location), "aotearo")) +
+               as.numeric(str_detect(tolower(location), "auckland")) +
+               as.numeric(str_detect(tolower(location), "wellington")) +
+               as.numeric(str_detect(tolower(location), "christchurch")) +
+               as.numeric(str_detect(tolower(location), "dunedin")) +
+               as.numeric(str_detect(tolower(location), "🇳🇿"))
+               ) > 0
+               ) %>%
+    ggplot(aes(colour=desc_nz, x=kwness)) + geom_density()
+```
+
+Location better than description.
+
+favs of NZ people
+
+```{r load_nz_favs, cache=TRUE}
+
+read_favs <- function(x) {
+  if(file.exists(x)){
+    filinf <- file.info(x)
+    if(filinf$size < 8){
+      return(NULL)
+      }
+    stored_frns <- read.csv(x, colClasses = "character")
+    stored_frns %>%
+      mutate(liked_id = gsub("x","",user_id)) %>%
+      select(user= favorited_by, liked_id) %>%
+      return()
+  } else {
+    return(NULL)
+  }
+}
+
+favset <- bind_rows(lapply(favs, read_favs))
+favset$kiwi <- as.numeric(favset$liked_id %in% hetangata)
+nzfavs <- favset %>% group_by(user) %>% summarise(likekw = sum(kiwi))
+rm(favset)
+
+```
+
+
+what does matching friends w. favs look like
+```{r}
+combined_data %>% inner_join(nzfavs, by="user") %>%
+    ggplot(aes(x=kwness,y=likekw,colour=(country_code=="NZ"))) + geom_point(size=0.4) +
+    facet_wrap(~(country_code=="NZ"), ncol=1) + coord_equal()
+```
+
+For location, who you follow gives better seperation than what you like.

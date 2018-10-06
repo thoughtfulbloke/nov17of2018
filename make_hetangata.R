@@ -6,7 +6,7 @@ library(dplyr)
 library(lubridate)
 
 
-aotearoa <- read.csv("../support_files/aotearoa.csv", 
+aotearoa <- read.csv("~/Syncplicity Folders/support_files/aotearoa.csv", 
                      colClasses = "character")
 
 have_data_on <- list.dirs("../fsc_acc", full.names=FALSE)
@@ -39,7 +39,6 @@ frnset <- bind_rows(lapply(frns, read_frns))
 
 frnset$kiwi <- as.numeric(frnset$friends_id %in% aotearoa$user_id)
 recalc <- frnset %>% group_by(user) %>% summarise(kw = sum(kiwi))
-hist(recalc$kw, breaks=(0:120)*10)
 sum(recalc$kw > 10) # 1878
 
 hetangata <- unique(c(aotearoa$user_id, recalc$user[recalc$kw > 10]))
@@ -56,4 +55,4 @@ sum(recalc$kw > 10) # 4697
 #So for around 10% of the accoutns we can call them kiwi
 hetangata <- unique(c(hetangata, recalc$user[recalc$kw > 10]))
 
-writeLines(hetangata, "../support_files/hetangata.txt")
+writeLines(hetangata, "~/Syncplicity Folders/support_files/hetangata.txt")
