@@ -248,7 +248,7 @@ table(kwness$locat)
 # NZ 1901
 
 write_out <- kwness %>% select(user_id, screen_name, locat)
-write.csv(write_out, file="~/Syncplicity Folders/support_files/aotearoa.csv", row.names = FALSE)
+write.csv(write_out, file="~/Syncplicity Folders/support_files/assignment.csv", row.names = FALSE)
 
 
 
