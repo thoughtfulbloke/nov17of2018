@@ -1,0 +1,91 @@
+---
+title: "interactions"
+author: "David Hood, IT Training and Development, University of Otago"
+date: "10/17/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Checking activity
+
+Combining topic acitivity with evidence of location
+
+```{r libraries}
+library(readr)
+library(dplyr)
+library(lubridate)
+library(purrr)
+library(tidyr)
+library(ggplot2)
+```
+
+
+
+```{r data}
+set1 = "../fprog/canadian_racists"
+set2 = "../fprog/mol_racist"
+set3 = "../fprog/South_racist"
+set4 = "../fprog/recent_direct"
+set5 = "../fprog/recent_direct_regather600"
+f1 <- paste0(set1, "/", list.files(set1, pattern=".csv$"))
+f2 <- paste0(set2, "/", list.files(set2, pattern=".csv$"))
+f3 <- paste0(set3, "/", list.files(set3, pattern=".csv$"))
+f4 <- paste0(set4, "/", list.files(set4, pattern=".csv$"))
+f5 <- paste0(set5, "/", list.files(set5, pattern=".csv$"))
+full_list = c(f1,f2,f3,f4,f5)
+
+v_for_visitor <- bind_rows(lapply(full_list, read_csv, col_types=cols(
+    .default = col_character()))) %>% distinct()
+on_or_offshore <-
+    read_csv(
+    "~/Syncplicity Folders/support_files/assignment.csv",
+    col_types = cols(.default = col_character())
+    ) %>% mutate(withx = paste0("x", user_id))
+```
+
+Data processing
+
+```{r reorg}
+m_for_mentions <- v_for_visitor %>% select(created_at, user_id, mentions_user_id) %>%
+    mutate(mentions = map(mentions_user_id, function(x){unlist(strsplit(x, split=" "))})) %>%
+    unnest(mentions)
+a_for_all <- m_for_mentions %>% 
+    left_join(on_or_offshore, by=c("user_id" = "withx")) %>%
+    rename(from_where = locat) %>%
+    left_join(on_or_offshore, by=c("mentions" = "withx")) %>%
+    rename(to_where = locat)
+
+sum(is.na(a_for_all$from_where))
+sum(is.na(a_for_all$to_where))
+# have about half sorted out
+```
+
+```{r a_figure}
+a_for_all %>% filter(!is.na(from_where), !is.na(to_where)) %>%
+    mutate(nztz = with_tz(ymd_hms(created_at, tz="UTC"), "Pacific/Auckland"),
+           min10 = floor_date(nztz, unit="10 minute"),
+           from_NZ = ifelse(from_where == "NZ", "NZ", "offshore"),
+           to_NZ = ifelse(to_where == "NZ", "NZ", "offshore"),
+           from_to = paste("from",from_NZ,"to", to_NZ)) %>% 
+    count(from_to, min10) %>%
+    ggplot(aes(xmin=min10, xmax=min10 + minutes(10), ymax=n, fill=from_to)) + 
+    geom_rect(ymin=0) + facet_wrap(~from_to, ncol=1) +
+    ggtitle("10 min Twitter notifications among particpants in the Canadian visit period
+            697,559 notifications") + theme_minimal()
+
+
+```
+
+
+
+```{r}
+a_for_all %>% filter(!is.na(from_where), !is.na(to_where)) %>%
+    mutate(fromNZ = from_where == "NZ", toNZ = to_where == "NZ") %>%
+    count(fromNZ,toNZ)
+```
+
+
+

@@ -1,5 +1,6 @@
 library(readr)
 library(dplyr)
+library(lubridate)
 
 set1 = "../fprog/canadian_racists"
 set2 = "../fprog/mol_racist"
@@ -15,5 +16,4 @@ full_list = c(f1,f2,f3,f4,f5)
 
 v_for_visitor <- bind_rows(lapply(full_list, read_csv, col_types=cols(
     .default = col_character()))) %>% distinct()
-
 
