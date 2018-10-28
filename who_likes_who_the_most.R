@@ -50,5 +50,5 @@ unfasc <- profset %>% group_by(liker) %>%
     group_by(liked) %>%
     summarise(mean_like= sum(n)/ 1354) %>% arrange(desc(mean_like))
 
-antif <- lookup_users(gsub("x","",unfasc$liked[1:12]))
+antif <- lookup_users(gsub("x","",unfasc$liked[1:20]))
 # the top twelve include the usual suspects
