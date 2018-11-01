@@ -50,3 +50,10 @@ antif <- lookup_users(gsub("x","",unfasc$liked[1:20]))
 fasclike <- profset %>% 
     filter(liker %in% c("x164070785", "x313038011"))
 # the top twelve include the usual suspects
+ls_likes <- read.csv("~/Syncplicity Folders/support_files/ls_likes.csv", colClasses = "character") %>%
+    count(user_id) %>% rename(lsn=n)
+sm_likes <- read.csv("~/Syncplicity Folders/support_files/sm_likes.csv", colClasses = "character") %>%
+    count(user_id) %>% rename(smn=n)
+fasclike <- ls_likes %>% inner_join(sm_likes) %>%
+    filter(! user_id %in% c("x164070785", "x313038011")) %>%
+    mutate(fstot = lsn + smn) %>% arrange(desc(fstot)) %>% slice(1:13)
