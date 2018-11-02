@@ -41,7 +41,7 @@ nz_af <- c(
     "x2741035986","x147406561","x15770483")
 
 delta_f <- profset %>% mutate(int_fa = liked %in% int_fa, nz_af = liked %in% nz_af) %>%
-    group_by(liker) %>% summarise(nett_af = sum(int_fa) - sum(nz_af)) 
+    group_by(liker) %>% summarise(nett_fa = sum(int_fa), nett_af = sum(nz_af)) 
 
 delta_f %>% mutate(xliker = paste0("x", liker)) %>% select(-liker) %>% 
     write.csv(file="~/Syncplicity Folders/support_files/fa_spec.csv", row.names = FALSE)

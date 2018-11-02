@@ -10,14 +10,15 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r libraries}
-library(readr)
-library(dplyr)
-library(lubridate)
+suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(lubridate))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(ggridges))
+suppressPackageStartupMessages(library(ggthemes))
 ```
 
-```{r load_data}
+```{r load_data, cache.path="../cache"}
 set1 = "../fprog/canadian_racists"
 set2 = "../fprog/mol_racist"
 set3 = "../fprog/South_racist"
@@ -31,22 +32,30 @@ f5 <- paste0(set5, "/", list.files(set5, pattern=".csv$"))
 full_list = c(f1,f2,f3,f4,f5)
 
 v_for_visitor <- bind_rows(lapply(full_list, read_csv, col_types=cols(
-    .default = col_character()))) %>% distinct() %>% 
+    .default = col_character()))) %>% distinct() 
 o_for_offshore <- read.csv("~/Syncplicity Folders/support_files/assignment.csv", colClasses = "character") %>%
     mutate(user_id = paste0("x", user_id))
 a_for_authoritarian <-  read.csv("~/Syncplicity Folders/support_files/fa_spec.csv", colClasses = "character") %>%
-    mutate(user_id = xliker, nett_af = as.numeric(nett_af)) 
+    mutate(user_id = xliker, af0 = as.numeric(nett_af)/ 12, 
+           fa0 = as.numeric(nett_fa)/ 15, balanced_affa = fa0-af0) 
 ```
 
-Attempt at a scattergraph 
+Attempt at a graph 
 
 ```{r fig.height=10}
 v_for_visitor %>% inner_join(o_for_offshore, by="user_id") %>%
-    inner_join(a_for_authoritarian, by="user_id") %>% ungroup() %>%
+    inner_join(a_for_authoritarian, by="user_id") %>% 
     mutate(is_NZ = locat == "NZ",
-           hour_of_day = as.factor(hour(created_at))) %>% 
-    count(nett_af, hour_of_day, is_NZ) %>%
-    ggplot(aes(x=nett_af, y=hour_of_day, fill=is_NZ, height=log10(n))) + 
-    geom_ridgeline(alpha=0.5) + facet_wrap(~ is_NZ, ncol=2) + geom_vline(xintercept = 0)
+           hour_of_day = as.factor(hour(created_at) + is_NZ/2)) %>% 
+    ggplot(aes(x=balanced_affa, y=hour_of_day, fill=is_NZ,group=NULL)) + 
+    geom_density_ridges(panel_scaling=FALSE, rel_min_height=0.01, alpha=0.5) +
+    geom_vline(xintercept = 0) + theme_tufte()
 ```
 
+```{r fig.height=10}
+v_for_visitor %>% inner_join(o_for_offshore, by="user_id") %>%
+    inner_join(a_for_authoritarian, by="user_id") %>% 
+    mutate(is_NZ = locat == "NZ") %>%
+    ggplot(aes(x=balanced_affa, fill=is_NZ)) + 
+    geom_histogram(binwidth = 0.5) + theme_tufte()
+```
