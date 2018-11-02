@@ -43,12 +43,17 @@ read_favs<- function(x) {
 
 profset <- bind_rows(lapply(favs, read_favs)) 
 profset <- profset %>% rename(liked = user_id, liker= favorited_by)
-unfasc <- profset %>% group_by(liker) %>%
-    mutate(bit_fasc = sum(liked %in% c("x164070785", "x313038011"))) %>% ungroup() %>%
-    filter(bit_fasc == 0) %>%
-    count(liker, liked) %>%
-    group_by(liked) %>%
-    summarise(mean_like= sum(n)/ 1354) %>% arrange(desc(mean_like))
-
+likefasc <- profset %>% 
+    filter(liked %in% c("x164070785", "x313038011")) %>%
+    count(liker, liked) 
 antif <- lookup_users(gsub("x","",unfasc$liked[1:20]))
+fasclike <- profset %>% 
+    filter(liker %in% c("x164070785", "x313038011"))
 # the top twelve include the usual suspects
+ls_likes <- read.csv("~/Syncplicity Folders/support_files/ls_likes.csv", colClasses = "character") %>%
+    count(user_id) %>% rename(lsn=n)
+sm_likes <- read.csv("~/Syncplicity Folders/support_files/sm_likes.csv", colClasses = "character") %>%
+    count(user_id) %>% rename(smn=n)
+fasclike <- ls_likes %>% inner_join(sm_likes) %>%
+    filter(! user_id %in% c("x164070785", "x313038011")) %>%
+    mutate(fstot = lsn + smn) %>% arrange(desc(fstot)) %>% slice(1:13)
