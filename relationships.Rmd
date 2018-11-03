@@ -36,37 +36,51 @@ v_for_visitor <- bind_rows(lapply(full_list, read_csv, col_types=cols(
 o_for_offshore <- read.csv("~/Syncplicity Folders/support_files/assignment.csv", colClasses = "character") %>%
     mutate(user_id = paste0("x", user_id))
 a_for_authoritarian <-  read.csv("~/Syncplicity Folders/support_files/fa_spec.csv", colClasses = "character") %>%
-    mutate(user_id = xliker, nett_af = as.numeric(nett_af),
-           nett_fa = as.numeric(nett_fa), af0 = nett_af/ 12, 
-           fa0 = nett_fa/ 15, balanced_affa = fa0-af0,
+    mutate(user_id = xliker, 
+           nett_nz = as.numeric(nett_nz),
+           nett_fa = as.numeric(nett_fa), 
+           nett_au = as.numeric(nett_au),
+           nett_gb = as.numeric(nett_gb),
+           nett_us = as.numeric(nett_us),
+           nz0 = nett_nz/ 12, 
+           fa0 = nett_fa/ 15,
+           au0 = nett_au/ 12,
+           gb0 = nett_gb/ 12,
+           us0 = nett_us/ 12,
            allike =as.numeric(allike))
+
+joined_data <- v_for_visitor %>% inner_join(o_for_offshore, by="user_id") %>%
+    inner_join(a_for_authoritarian, by="user_id") %>% 
+    filter(locat %in% c("AU", "NZ", "US", "GB")) %>%
+    mutate(af = nett_nz * (locat == "NZ") + nett_au * (locat == "AU") +
+               nett_gb * (locat == "GB") + nett_us * (locat == "US"),
+           af0 = nz0 * (locat == "NZ") + au0 * (locat == "AU") +
+               gb0 * (locat == "GB") + us0 * (locat == "US"),
+               balance = fa0-af0, interest = (af + nett_fa)/allike)
 
 ```
 
 Attempt at a graph 
 
 ```{r fig.height=10}
-v_for_visitor %>% inner_join(o_for_offshore, by="user_id") %>%
-    inner_join(a_for_authoritarian, by="user_id") %>% 
+joined_data %>% 
     mutate(is_NZ = locat == "NZ",
            hour_of_day = as.factor(hour(created_at) + is_NZ/2)) %>% 
-    ggplot(aes(x=balanced_affa, y=hour_of_day, fill=is_NZ,group=NULL)) + 
+    ggplot(aes(x=balance, y=hour_of_day, fill=is_NZ,group=NULL)) + 
     geom_density_ridges(panel_scaling=FALSE, rel_min_height=0.01, alpha=0.5) +
     geom_vline(xintercept = 0) + theme_tufte()
 ```
 
 ```{r fig.height=10}
-v_for_visitor %>% inner_join(o_for_offshore, by="user_id") %>%
-    inner_join(a_for_authoritarian, by="user_id") %>% 
+joined_data %>%
     mutate(is_NZ = locat == "NZ") %>%
-    ggplot(aes(x=balanced_affa, fill=is_NZ)) + 
+    ggplot(aes(x=balance, fill=is_NZ)) + 
     geom_histogram(binwidth = 0.5) + theme_tufte()
 ```
 
 
 ```{r fig.height=5}
-v_for_visitor %>% inner_join(o_for_offshore, by="user_id") %>%
-    inner_join(a_for_authoritarian, by="user_id") %>% 
+joined_data %>%
     mutate(is_NZ = locat == "NZ",
            hour_of_day = hour(created_at)) %>% 
     group_by(hour_of_day) %>% summarise(propNZ = sum(is_NZ)/ n()) %>%
@@ -75,11 +89,8 @@ v_for_visitor %>% inner_join(o_for_offshore, by="user_id") %>%
 ```
 
 ```{r fig.height=5}
-v_for_visitor %>% inner_join(o_for_offshore, by="user_id") %>%
-    inner_join(a_for_authoritarian, by="user_id") %>% 
-    mutate(is_NZ = locat == "NZ",
-           hour_of_day = hour(created_at)) %>% 
-    filter(locat %in% c("AU", "NZ", "US", "GB")) %>% 
+joined_data %>%
+    mutate(hour_of_day = hour(created_at)) %>% 
     count(locat, hour_of_day) %>%
     ggplot(aes(x=hour_of_day, y=n)) + facet_wrap(~locat, ncol=2) +
     geom_col() + theme_tufte() + coord_polar()
@@ -88,26 +99,19 @@ v_for_visitor %>% inner_join(o_for_offshore, by="user_id") %>%
 NZ hist
 
 ```{r fig.height=5}
-v_for_visitor %>% inner_join(o_for_offshore, by="user_id") %>%
-    inner_join(a_for_authoritarian, by="user_id") %>% 
+joined_data %>%
     filter(locat ==  "NZ") %>% 
-    ggplot(aes(x=balanced_affa)) +
+    ggplot(aes(x=balance)) +
     geom_histogram(binwidth = 0.5) + theme_tufte() 
 ```
 
 Scattergraph
 
-```{r fig.height=5}
-v_for_visitor %>% inner_join(o_for_offshore, by="user_id") %>%
-    inner_join(a_for_authoritarian, by="user_id") %>% 
-    mutate(is_NZ = locat == "NZ",
-           hour_of_day = hour(created_at),
-           interest = 1 - ((nett_fa + nett_af)/ allike)) %>% 
-    filter(locat %in% c("AU", "NZ", "US", "GB")) %>% 
-    select(user_id, balanced_affa, locat, interest) %>% distinct() %>%
-    glimpse() %>%
-    ggplot(aes(x=balanced_affa, y=interest, colour=locat)) + geom_point(alpha=0.5) +
-    facet_wrap(~ locat, ncol=1)
+```{r fig.height=6}
+joined_data %>%
+    select(user_id, balance, locat, interest) %>% distinct() %>%
+    ggplot(aes(x=balance, y=log2(interest), colour=locat)) + geom_point(alpha=0.1) +
+    facet_wrap(~ locat, ncol=2) + theme_tufte() + coord_cartesian(xlim=c(-10,10))
 
 
 ```

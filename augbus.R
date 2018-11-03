@@ -42,16 +42,15 @@ aus_opp <- profset %>% mutate(user_id = paste0("x", liker)) %>%
     inner_join(o_for_offshore, by="user_id") %>% 
     filter(locat == "AU") %>% mutate(fa = liked %in% int_fa) %>%
     group_by(liker) %>% mutate(n_fa = sum(fa)) %>% ungroup() %>%
-    filter(n_fa == 0) %>% count(liked) %>% arrange(desc(n)) %>% slice(1:20)
+    filter(n_fa == 0) %>% count(liked) %>% arrange(desc(n)) %>% slice(1:12)
 gb_opp <- profset %>% mutate(user_id = paste0("x", liker)) %>%
     inner_join(o_for_offshore, by="user_id") %>% 
     filter(locat == "GB") %>% mutate(fa = liked %in% int_fa) %>%
     group_by(liker) %>% mutate(n_fa = sum(fa)) %>% ungroup() %>%
-    filter(n_fa == 0) %>% count(liked) %>% arrange(desc(n)) %>% slice(1:20)
+    filter(n_fa == 0) %>% count(liked) %>% arrange(desc(n)) %>% slice(1:12)
 us_opp <- profset %>% mutate(user_id = paste0("x", liker)) %>%
     inner_join(o_for_offshore, by="user_id") %>% 
     filter(locat == "US") %>% mutate(fa = liked %in% int_fa) %>%
     group_by(liker) %>% mutate(n_fa = sum(fa)) %>% ungroup() %>%
-    filter(n_fa == 0) %>% count(liked) %>% arrange(desc(n)) %>% slice(1:20)
-save(aus_opp,gb_opp,us_opp, file="~/Syncplicity Folders/support_files/opposition.RData")
-
+    filter(n_fa == 0) %>% count(liked) %>% arrange(desc(n)) %>% slice(1:12)
+write.csv(bind_rows(aus_opp,gb_opp,us_opp), file="~/Desktop/oppos.csv")
