@@ -116,3 +116,28 @@ joined_data %>%
 
 
 ```
+
+
+
+NZonly- accounts involved, how much they follow alt-right (x) vs how many posts(y)
+
+```{r fig.height=6}
+joined_data %>%
+    count(user_id, balance, locat, interest) %>% distinct() %>%
+    ggplot(aes(x=balance, y=n, colour=locat)) + 
+    geom_vline(xintercept = 0, colour="#AAAAAA") +
+    geom_jitter(size=.4, alpha=0.1, width=0.1, height=0.5) +
+    theme_tufte() + coord_cartesian(xlim=c(-8,8), ylim=c(0,200)) +facet_wrap(~ locat, ncol=2)
+    
+```
+
+
+
+Are those in opposition real people 
+
+```{r}
+joined_data %>% filter(locat == "NZ") %>% arrange(balance) %>% select(screen_name.x, name, description, balance) %>%
+    distinct() %>% View()
+```
+
+
