@@ -1,0 +1,82 @@
+---
+title: "nz_only"
+author: "David Hood"
+date: "04/11/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(cache.path = "../cache")
+```
+
+```{r libraries}
+suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(lubridate))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(ggridges))
+suppressPackageStartupMessages(library(ggthemes))
+```
+
+```{r load_data, cache=TRUE}
+set1 = "../fprog/canadian_racists"
+set2 = "../fprog/mol_racist"
+set3 = "../fprog/South_racist"
+set4 = "../fprog/recent_direct"
+set5 = "../fprog/recent_direct_regather600"
+f1 <- paste0(set1, "/", list.files(set1, pattern=".csv$"))
+f2 <- paste0(set2, "/", list.files(set2, pattern=".csv$"))
+f3 <- paste0(set3, "/", list.files(set3, pattern=".csv$"))
+f4 <- paste0(set4, "/", list.files(set4, pattern=".csv$"))
+f5 <- paste0(set5, "/", list.files(set5, pattern=".csv$"))
+full_list = c(f1,f2,f3,f4,f5)
+
+v_for_visitor <- bind_rows(lapply(full_list, read_csv, col_types=cols(
+    .default = col_character()))) %>% distinct() 
+o_for_offshore <- read.csv("~/Syncplicity Folders/support_files/assignment.csv", colClasses = "character") %>%
+    mutate(user_id = paste0("x", user_id))
+a_for_authoritarian <-  read.csv("~/Syncplicity Folders/support_files/fa_spec.csv", colClasses = "character") %>%
+    mutate(user_id = xliker, 
+           nett_nz = as.numeric(nett_nz),
+           nett_fa = as.numeric(nett_fa), 
+           nett_au = as.numeric(nett_au),
+           nett_gb = as.numeric(nett_gb),
+           nett_us = as.numeric(nett_us),
+           nz0 = nett_nz/ 12, 
+           fa0 = nett_fa/ 15,
+           au0 = nett_au/ 12,
+           gb0 = nett_gb/ 11,
+           us0 = nett_us/ 10,
+           allike =as.numeric(allike))
+
+joined_data <- v_for_visitor %>% inner_join(o_for_offshore, by="user_id") %>%
+    inner_join(a_for_authoritarian, by="user_id") %>% 
+    filter(locat == "NZ") %>%
+    mutate(af = nett_nz * (locat == "NZ") + nett_au * (locat == "AU") +
+               nett_gb * (locat == "GB") + nett_us * (locat == "US"),
+           af0 = nz0 * (locat == "NZ") + au0 * (locat == "AU") +
+               gb0 * (locat == "GB") + us0 * (locat == "US"),
+               balance = fa0-af0, interest = (af + nett_fa)/allike)
+
+```
+
+
+Code for checking the fringes
+
+```{r eval=FALSE}
+joined_data %>% mutate(name_length=nchar(name)) %>%
+    group_by(user_id) %>% arrange(desc(name_length)) %>% slice(1) %>% ungroup() %>%
+    select(screen_name.x, name, description,balance) %>% arrange(balance) %>% View()
+```
+realname RW 23/71 LW 100/148
+emoji in screenname RW 13 LW 7
+
+```{r}
+joined_data %>% mutate(name_length=nchar(name)) %>%
+    group_by(user_id) %>% arrange(desc(name_length)) %>% slice(1) %>% ungroup() %>%
+    mutate(above0= balance > 0) %>% summarise(RW=sum(above0), n())
+    
+```
+
+RW 291 LW 1387
