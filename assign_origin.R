@@ -15,9 +15,6 @@ aotearoa <- read.csv("~/Syncplicity Folders/support_files/aotearoa.csv",
 
 have_data_on <- list.dirs("../fsc_acc", full.names=FALSE)
 have_data_on <- have_data_on[have_data_on != ""]
-# 12079642/fav_12079642.csv is the form for fave
-# 12079642/who_12079642.csv is the form for profile
-# 12079642/frn_12079642.csv is the form for friends (those followed)
 favs <- paste0("../fsc_acc/", have_data_on, "/fav_", have_data_on, ".csv")
 profiles <- paste0("../fsc_acc/", have_data_on, "/who_", have_data_on, ".csv")
 frns <- paste0("../fsc_acc/", have_data_on, "/frn_", have_data_on, ".csv")

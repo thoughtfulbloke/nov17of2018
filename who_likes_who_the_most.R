@@ -11,9 +11,6 @@ library(readr)
 
 have_data_on <- list.dirs("../fsc_acc", full.names=FALSE)
 have_data_on <- have_data_on[have_data_on != ""]
-# 12079642/fav_12079642.csv is the form for fave
-# 12079642/who_12079642.csv is the form for profile
-# 12079642/frn_12079642.csv is the form for friends (those followed)
 
 onshore <-
     read_csv(

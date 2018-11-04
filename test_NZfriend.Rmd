@@ -27,9 +27,6 @@ hetangata <- readLines("~/Syncplicity Folders/support_files/hetangata.txt")
 ```{r load_nz_by_friends, cache=TRUE}
 have_data_on <- list.dirs("../fsc_acc", full.names=FALSE)
 have_data_on <- have_data_on[have_data_on != ""]
-# 1234567890/fav_1234567890.csv is the form for fave
-# 1234567890/who_1234567890.csv is the form for profile
-# 1234567890/frn_1234567890.csv is the form for friends (those followed)
 favs <- paste0("../fsc_acc/", have_data_on, "/fav_", have_data_on, ".csv")
 profiles <- paste0("../fsc_acc/", have_data_on, "/who_", have_data_on, ".csv")
 frns <- paste0("../fsc_acc/", have_data_on, "/frn_", have_data_on, ".csv")

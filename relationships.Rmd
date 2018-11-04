@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(cache.path = "../cache")
 ```
 
 ```{r libraries}
@@ -18,7 +19,7 @@ suppressPackageStartupMessages(library(ggridges))
 suppressPackageStartupMessages(library(ggthemes))
 ```
 
-```{r load_data, cache.path="../cache", cache=TRUE}
+```{r load_data, cache=TRUE}
 set1 = "../fprog/canadian_racists"
 set2 = "../fprog/mol_racist"
 set3 = "../fprog/South_racist"

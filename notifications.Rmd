@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(cache.path = "../cache")
 ```
 
 ## Checking activity
@@ -15,11 +16,11 @@ Combining topic acitivity with evidence of location
 
 ```{r libraries}
 library(readr)
-library(dplyr)
-library(lubridate)
-library(purrr)
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(lubridate))
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(purrr))
 library(tidyr)
-library(ggplot2)
 ```
 
 
