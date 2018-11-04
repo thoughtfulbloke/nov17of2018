@@ -18,7 +18,7 @@ suppressPackageStartupMessages(library(ggridges))
 suppressPackageStartupMessages(library(ggthemes))
 ```
 
-```{r load_data, cache.path="../cache"}
+```{r load_data, cache.path="../cache", cache=TRUE}
 set1 = "../fprog/canadian_racists"
 set2 = "../fprog/mol_racist"
 set3 = "../fprog/South_racist"
@@ -45,8 +45,8 @@ a_for_authoritarian <-  read.csv("~/Syncplicity Folders/support_files/fa_spec.cs
            nz0 = nett_nz/ 12, 
            fa0 = nett_fa/ 15,
            au0 = nett_au/ 12,
-           gb0 = nett_gb/ 12,
-           us0 = nett_us/ 12,
+           gb0 = nett_gb/ 11,
+           us0 = nett_us/ 10,
            allike =as.numeric(allike))
 
 joined_data <- v_for_visitor %>% inner_join(o_for_offshore, by="user_id") %>%
@@ -126,18 +126,13 @@ joined_data %>%
     count(user_id, balance, locat, interest) %>% distinct() %>%
     ggplot(aes(x=balance, y=n, colour=locat)) + 
     geom_vline(xintercept = 0, colour="#AAAAAA") +
-    geom_jitter(size=.4, alpha=0.1, width=0.1, height=0.5) +
-    theme_tufte() + coord_cartesian(xlim=c(-8,8), ylim=c(0,200)) +facet_wrap(~ locat, ncol=2)
+    geom_jitter(size=.1, alpha=0.1, width=0.1, height=0.5) +
+    theme_tufte() + coord_cartesian(xlim=c(-8,8), ylim=c(0,180)) +facet_wrap(~ locat, ncol=2)
     
 ```
 
 
 
-Are those in opposition real people 
 
-```{r}
-joined_data %>% filter(locat == "NZ") %>% arrange(balance) %>% select(screen_name.x, name, description, balance) %>%
-    distinct() %>% View()
-```
 
 
