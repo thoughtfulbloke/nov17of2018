@@ -80,3 +80,12 @@ joined_data %>% mutate(name_length=nchar(name)) %>%
 ```
 
 RW 291 LW 1387
+
+```{r}
+have_data_on <- list.dirs("../fsc_acc", full.names=FALSE)
+have_data_on <- have_data_on[have_data_on != ""]
+have_data_on <- have_data_on[have_data_on %in% gsub("x","",unique(joined_data$user_id))]
+frns <- paste0("../fsc_acc/", have_data_on, "/frn_", have_data_on, ".csv")
+
+```
+
