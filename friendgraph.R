@@ -49,10 +49,11 @@ nzmatches <- nzs %>%
     select(prime, secondary, strength)
 
 graph <- graph_from_data_frame(nzmatches)
-layout <- create_layout(graph, layout = 'drl')
-ggraph(layout) + 
-    geom_edge_link(aes(colour = factor(strength))) + 
-    geom_node_point()
+layout <- create_layout(graph, layout = 'fr')
+# like fr or dh 
+# ggraph(layout) + 
+#    geom_edge_link(aes(colour = factor(strength))) + 
+#    geom_node_point()
 # 
 # # Not specifying the layout - defaults to "auto"
 # ggraph(graph) + 
