@@ -48,8 +48,6 @@ nz %>% summarise(sum(str_detect(text, fixed("I ", ignore_case = FALSE)))) / nrow
 us %>% summarise(sum(str_detect(text, fixed("I ", ignore_case = FALSE)))) / nrow(us)
 nz %>% summarise(sum(str_detect(text, fixed("evidence", ignore_case = TRUE)))) / nrow(nz)
 us %>% summarise(sum(str_detect(text, fixed("evidence", ignore_case = TRUE)))) / nrow(us)
-nz %>% summarise(sum(str_detect(text, fixed("fact", ignore_case = TRUE)))) / nrow(nz)
-us %>% summarise(sum(str_detect(text, fixed("fact", ignore_case = TRUE)))) / nrow(us)
 nz %>% summarise(sum(str_detect(text, fixed("freedom", ignore_case = TRUE)))) / nrow(nz)
 us %>% summarise(sum(str_detect(text, fixed("freedom", ignore_case = TRUE)))) / nrow(us)
 nz %>% summarise(sum(str_detect(text, fixed("truth", ignore_case = TRUE)))) / nrow(nz)
@@ -58,8 +56,8 @@ nz %>% summarise(sum(str_detect(text, fixed("value", ignore_case = TRUE)))) / nr
 us %>% summarise(sum(str_detect(text, fixed("value", ignore_case = TRUE)))) / nrow(us)
 nz %>% summarise(sum(str_detect(text, fixed("like", ignore_case = TRUE)))) / nrow(nz)
 us %>% summarise(sum(str_detect(text, fixed("like", ignore_case = TRUE)))) / nrow(us)
-nz %>% summarise(sum(str_detect(text, fixed(" as ", ignore_case = TRUE)))) / nrow(nz)
-us %>% summarise(sum(str_detect(text, fixed(" as ", ignore_case = TRUE)))) / nrow(us)
+nz %>% summarise(sum(str_detect(text, fixed("must", ignore_case = TRUE)))) / nrow(nz)
+us %>% summarise(sum(str_detect(text, fixed("must", ignore_case = TRUE)))) / nrow(us)
 
 library(tidytext)
 nz_words <- nzus %>%
