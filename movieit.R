@@ -58,16 +58,16 @@ allNZ <- toNZer %>% filter(!is.na(x1))
 messagingNZ <- layout %>% filter(name %in% c(allNZ$user_id, allNZ$mentions))
 
 # 1117 NZers
-anibase <- ggplot(data=messagingNZ, aes(x=x,y=y)) + geom_point(size=0.05) + theme_void() +
-    geom_segment(data=allNZ, aes(x=x1, y=y1, xend=x2, yend=y2), lwd=0.1) + 
-    theme(legend.position = "none") +
-    labs(title = 'total 1117 NZ accounts & 19111 notifications, NZTime: {frame_time}') +
-    transition_time(step1) +
-    enter_fade() + 
-    exit_fade()
-
-animate(anibase, nframes = length(unique(allNZ$step1)))
-anim_save("NZ.gif")
+# anibase <- ggplot(data=messagingNZ, aes(x=x,y=y)) + geom_point(size=0.05) + theme_void() +
+#     geom_segment(data=allNZ, aes(x=x1, y=y1, xend=x2, yend=y2), lwd=0.1) + 
+#     theme(legend.position = "none") +
+#     labs(title = 'total 1117 NZ accounts & 19111 notifications, NZTime: {frame_time}') +
+#     transition_time(step1) +
+#     enter_fade() + 
+#     exit_fade()
+# 
+# animate(anibase, nframes = length(unique(allNZ$step1)))
+# anim_save("NZ.gif")
     
 from_oe <- toNZer  %>% filter(is.na(x1)) %>%
     group_by(mentions,x2,y2,step1) %>% 
@@ -86,10 +86,27 @@ from_all <- from_oe %>%
            log10mentions = log10(n_total),
            oe_prop = n_oe / n_total)
 
-plusbase <- ggplot(data=messagingNZ, aes(x=x,y=y)) + geom_point(size=0.05) + theme_void() +
+hourly <- from_all %>% 
+    group_by(step1) %>%
+    summarise(nz = 2*sum(n_nz)/1310 - 24,oe = -2*sum(n_oe)/1310 -24) %>%
+    mutate(step= 4.65928 * as.numeric(as.factor(step1))/72 - (24.31569)) %>%
+    gather(oe_nz, val, nz:oe) %>% mutate(oe_prop = as.numeric(as.factor(oe_nz))-1) %>%
+    select(-step1)
+
+hourly2 <- from_all %>% 
+    group_by(step1) %>%
+    summarise(nz = 2*sum(n_nz)/1310 - 24,oe = -2*sum(n_oe)/1310 -24) %>%
+    mutate(step= 4.65928 * as.numeric(as.factor(step1))/72 - (24.31569)) %>%
+    gather(oe_nz, val, nz:oe) %>% mutate(oe_prop = as.numeric(as.factor(oe_nz))-1)
+plusbase <- 
+    ggplot(data=messagingNZ, aes(x=x,y=y)) + geom_point(size=0.05, alpha=0.5) + theme_void() +
         geom_segment(data=allNZ, aes(x=x1, y=y1, xend=x2, yend=y2), lwd=0.2) +
     geom_point(data=from_all, aes(x=x2,y=y2, size=log10mentions, colour=oe_prop)) +
-    scale_colour_viridis_c() +
+    scale_colour_viridis_c(end = 0.95) + 
+    geom_segment(data=hourly, aes(x=step, y=-24, xend=step,
+                                  yend=val, col=oe_prop), lwd=0.8,alpha=0.2) +
+     geom_segment(data=hourly2, aes(x=step, y=-24, xend=step,
+                                      yend=val, col=oe_prop), lwd=1) +
         labs(title = '1117 NZ accounts & 34105 notifications, {frame_time} NZtime') +
         transition_time(step1) +
         enter_appear() + 
