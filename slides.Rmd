@@ -9,27 +9,60 @@ output: powerpoint_presentation
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-## R Markdown
-
-This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
-
-## Slide with Bullets
-
-- Bullet 1
-- Bullet 2
-- Bullet 3
-
-## Slide with R Output
-
-```{r cars, echo = TRUE}
-summary(cars)
+```{r libraries, message=FALSE, warning=FALSE}
+library(readr)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(purrr)
+library(tidyr)
+library(ggraph)
+library(igraph)
+library(ggthemes)
+library(gganimate)
 ```
 
-## Slide with Plot
-
-```{r pressure}
-plot(pressure)
+```{r coredata}
+# coredata has v_for visitor (tweet discussion) and
+# m_for_mentions (notifications from the tweets)
+load("~/Syncplicity Folders/support_files/coredata.RData")
+n_for_nznetwork <- read.csv("~/Syncplicity Folders/support_files/nzmatches.csv",
+                          colClasses = "character") # nz friend relationships
+r_for_radicalism <- read.csv("~/Syncplicity Folders/support_files/fa_spec.csv",
+                          colClasses = "character") # were on spectrum account
+c_for_country <- read.csv("~/Syncplicity Folders/support_files/assignment.csv",
+                          colClasses = "character")
 ```
+
+## Dataset
+
+- From targetted searches & capturing at time
+- 2018-07-25 13:03:40 to 2018-08-06 23:45:21 UTC
+- 115218 tweets, 3065709 mentions
+- 373693 accounts loosely involved
+- 40798 accounts tightly involved
+
+## Backstory
+
+De-venued as of July 5th
+
+- of those opposed 25.5% were in NZ (AU + US + UK was 57.2%, robots 7.6%, anon 8.2%)
+- of those supportive 81.3% were in NZ (US + UK was 18.8% )
+
+```{r}
+data_as_txt <- "
+state, opposed, supportive
+NZ, 25.5, 81.3
+AU, 25.5, 0
+US, 20.7, 12.5
+UK, 10.9, 6.3
+robots, 7.6, 0
+anon, 8.2,0
+other 1.6, 0"
+
+```
+
+
+
+
 
