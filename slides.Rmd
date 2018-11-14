@@ -44,12 +44,8 @@ c_for_country <- read.csv("~/Syncplicity Folders/support_files/assignment.csv",
 
 ## Backstory
 
-De-venued as of July 5th
-
-- of those opposed 25.5% were in NZ (AU + US + UK was 57.2%, robots 7.6%, anon 8.2%)
-- of those supportive 81.3% were in NZ (US + UK was 18.8% )
-
-```{r}
+```{r, fig.height=3, dpi=300}
+# 5th July
 data_as_txt <- "
 state, opposed, supportive
 NZ, 25.5, 81.3
@@ -57,12 +53,36 @@ AU, 25.5, 0
 US, 20.7, 12.5
 UK, 10.9, 6.3
 robots, 7.6, 0
-anon, 8.2,0
-other 1.6, 0"
+anon, 8.2, 0
+other, 1.6, 0"
+
+read.csv(text=data_as_txt) %>% gather(status, percent, 2:3) %>%
+    ggplot(aes(x=status, y=percent, fill=state)) + 
+    geom_col(width=0.3) + coord_flip() + theme_minimal() +
+    scale_fill_colorblind() + xlab("reaction to Phil")
 
 ```
 
+## Composition
 
+```{r}
+c_for_country %>% 
+    mutate(location = case_when(
+        locat == "offshore" ~ "not nz",
+        locat == "US" ~ "US",
+        locat == "" ~ "unknown",
+        locat == "GB" ~ "UK",
+        locat == "AU" ~ "AU",
+        locat == "NZ" ~ "NZ",
+        locat == "CA" ~ "CA",
+        TRUE ~ "other"
+    )) %>%
+    count(location, sort = TRUE) %>%
+    ggplot(aes(x=location, y=n, fill=location)) + 
+    geom_col(width=0.3) + theme_minimal() +
+    scale_fill_colorblind() + xlab("inferred location")
+```
 
+## 
 
 
