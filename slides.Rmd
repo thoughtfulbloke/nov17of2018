@@ -83,6 +83,31 @@ c_for_country %>%
     scale_fill_colorblind() + xlab("inferred location")
 ```
 
-## 
+## Politics - notifiers
 
+```{r, fig.height=5}
+c_for_country <- c_for_country %>% mutate(xid=paste0("x", user_id))
+grf <- v_for_visitor %>%
+    count(user_id) %>%
+    inner_join(r_for_radicalism, by=c("user_id" = "xliker")) %>%
+    inner_join(c_for_country, by=c("user_id" = "xid")) %>% 
+    rename(place = locat) %>%
+    filter(place %in% c("NZ","AU","GB","US")) %>%
+    mutate(
+        balance = as.numeric(nett_fa) - 
+            (as.numeric(nett_nz) + as.numeric(nett_au) + 
+                 as.numeric(nett_gb) + as.numeric(nett_us)),
+        focus = (as.numeric(nett_fa) + as.numeric(nett_nz) + as.numeric(nett_au) + 
+                 as.numeric(nett_gb) + as.numeric(nett_us))/as.numeric(allike)
+    ) %>%
+    count(user_id, place, balance,focus, n) 
+    ggplot(grf, aes(x = balance, y=log2(focus + 0.01), colour=place)) +
+        geom_vline(xintercept = 0, alpha=0.4) + geom_jitter(alpha=0.3) +
+     facet_wrap(~ place, nrow=2, strip.position="bottom") + scale_colour_colorblind() + theme_void() +
+        theme(legend.position="none", strip.text.x = element_text(size = 32))
+        
+    
 
+```
+
+## Network
