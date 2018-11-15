@@ -20,6 +20,7 @@ library(ggraph)
 library(igraph)
 library(ggthemes)
 library(gganimate)
+library(patchwork)
 ```
 
 ```{r coredata}
@@ -32,6 +33,9 @@ r_for_radicalism <- read.csv("~/Syncplicity Folders/support_files/fa_spec.csv",
                           colClasses = "character") # were on spectrum account
 c_for_country <- read.csv("~/Syncplicity Folders/support_files/assignment.csv",
                           colClasses = "character")
+f_for_friends <- read.csv("~/Syncplicity Folders/support_files/friends.csv",
+                          colClasses = "character") %>%
+    mutate(lookup = paste(paste0("x",user), paste0("x",friends_id)))
 ```
 
 ## Dataset
@@ -110,4 +114,63 @@ grf <- v_for_visitor %>%
 
 ```
 
-## Network
+## NZ Closeup 
+
+```{r, fig.height=5}
+grf <- v_for_visitor %>%
+    count(user_id) %>%
+    inner_join(r_for_radicalism, by=c("user_id" = "xliker")) %>%
+    inner_join(c_for_country, by=c("user_id" = "xid")) %>% 
+    rename(place = locat) %>%
+    filter(place == "NZ") %>%
+    mutate(
+        balance = as.numeric(nett_fa) - 
+            (as.numeric(nett_nz) + as.numeric(nett_au) + 
+                 as.numeric(nett_gb) + as.numeric(nett_us)),
+        focus = (as.numeric(nett_fa) + as.numeric(nett_nz) + as.numeric(nett_au) + 
+                 as.numeric(nett_gb) + as.numeric(nett_us))/as.numeric(allike)
+    ) %>%
+    count(user_id, place, balance,focus, n) 
+g1 <- ggplot(grf, aes(x = balance, y=log2(focus + 0.1))) +
+        geom_vline(xintercept = 0, alpha=0.4) + 
+        geom_vline(xintercept = median(grf$balance), alpha=0.4, lwd=2) + 
+        geom_jitter(alpha=0.3, colour="#56B4E9", size=2) + 
+        theme_minimal() +
+        theme(legend.position="none",plot.title = element_text(size=32)) + 
+    xlab("") + ylab("")
+g2 <- ggplot(grf, aes(x = balance)) +
+        geom_vline(xintercept = 0, alpha=0.4) + 
+        geom_vline(xintercept = median(grf$balance), alpha=0.4, lwd=2) + 
+        geom_density(alpha=0.3, fill="#56B4E9") + 
+        theme_void() + xlim(-1*(max(abs(range(grf$balance)))-median(grf$balance)),
+                            (max(abs(range(grf$balance)))-median(grf$balance))) +
+        theme(legend.position="none")
+    
+g1/g2
+
+```
+
+## Community
+
+
+```{r}
+
+m_for_mentions %>%
+    mutate(nox=gsub("x", "", mentions)) %>%
+    inner_join(c_for_country, by=c("nox"="user_id")) %>%
+    filter(locat == "NZ") %>%
+    mutate(close = !paste(mentions, user_id) %in% f_for_friends$lookup,
+           NZ_time = with_tz(ymd_hms(created_at), tz="Pacific/Auckland"),
+           step1 = floor_date(NZ_time,unit = "hour")) %>%
+    group_by(mentions, step1) %>% 
+    summarise(og = sum(!close), ogthres = og > 10) %>%
+    group_by(step1) %>% summarise(thres=sum(ogthres)) %>%
+    ggplot(aes(x=step1, y=thres)) + geom_line() + theme_minimal() +
+    ggtitle("Of 1505 NZ accounts, the number of accounts in a given hour \ngettting more than 10 notifications from outside of thier friend groups") +
+    xlab("Date") + ylab("Number of accounts") +
+    geom_vline(xintercept = ISOdatetime(2018,8,2,19,44,00, tz="Pacific/Auckland"), 
+               colour="blue", lwd=1.1) +
+    annotate("text", x = ISOdatetime(2018,8,3,9,44,00, tz="Pacific/Auckland"),
+             y = 30, label="visit", colour="blue")
+```
+
